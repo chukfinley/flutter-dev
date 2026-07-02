@@ -34,7 +34,9 @@ package or a release step, check the matching file in `rules/`.
 - **Location / GPS** → `rules/location-libre-location.md`
   Use `libre_location`, never `geolocator` (Google Play Services → non-free flag). No background-location permission unless truly needed.
 - **Notifications & push** → `rules/notifications-push.md`
-  Local = flutter_local_notifications. Push = UnifiedPush wake-up poke (self-host ntfy / NextPush), then app fetches E2EE content from your relay. FCM only as Play-Store fallback. Never put plaintext in a push.
+  Local = flutter_local_notifications. Push = UnifiedPush wake-up poke (self-host auth-locked ntfy), then app fetches E2EE content from your relay. FCM only as Play-Store fallback. Never put plaintext in a push. Endpoint URL is a secret capability; auth-lock ntfy so only your backend can publish.
+- **Live status-bar chip** → `rules/live-status-bar-notification.md`
+  The "notification top-left" = Android 16 promoted-ongoing Live Update. Native Kotlin (setRequestPromotedOngoing + POST_PROMOTED_NOTIFICATIONS), OS-ticked chronometer countdown, no foreground service/loop. Reference: uhr_app ClockEngine.kt.
 - **Client telemetry** → `rules/no-client-telemetry.md`
   No Firebase/Crashlytics/analytics SDK in the app. Log server-side (PostHog).
 - **Build & signing** → `rules/build-release-signing.md`
