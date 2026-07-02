@@ -34,7 +34,7 @@ package or a release step, check the matching file in `rules/`.
 - **Location / GPS** → `rules/location-libre-location.md`
   Use `libre_location`, never `geolocator` (Google Play Services → non-free flag). No background-location permission unless truly needed.
 - **Notifications & push** → `rules/notifications-push.md`
-  Local = flutter_local_notifications. Push = UnifiedPush wake-up poke (self-host auth-locked ntfy), then app fetches E2EE content from your relay. FCM only as Play-Store fallback. Never put plaintext in a push. Endpoint URL is a secret capability; auth-lock ntfy so only your backend can publish.
+  Local = flutter_local_notifications. Push = UnifiedPush (now WebPush/VAPID, RFC 8030/8291/8292) with self-hosted ntfy; content-free poke → app fetches E2EE from your relay. Build backend as a standard WebPush sender. One build + embedded FCM distributor (behind a flavor) for Google phones; F-Droid flavor stays Google-free. Flutter pkg `unifiedpush` v6.2.0 is Android+Linux only — iOS needs a separate APNs path (content-free, SimpleX-style). Endpoint URL = secret capability; leak = DoS/metadata only, never content. Always surface a notification (FCM deprioritizes silent data msgs after ~7d).
 - **Live status-bar chip** → `rules/live-status-bar-notification.md`
   The "notification top-left" = Android 16 promoted-ongoing Live Update. Native Kotlin (setRequestPromotedOngoing + POST_PROMOTED_NOTIFICATIONS), OS-ticked chronometer countdown, no foreground service/loop. Reference: uhr_app ClockEngine.kt.
 - **Client telemetry** → `rules/no-client-telemetry.md`
