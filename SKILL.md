@@ -15,6 +15,8 @@ package or a release step, check the matching file in `rules/`.
 
 ## Rules index
 
+- **State management** → `rules/state-riverpod.md`
+  Always Riverpod. `setState` only for purely local throwaway widget state.
 - **Location / GPS** → `rules/location-libre-location.md`
   Use `libre_location`, never `geolocator` (pulls Google Play Services → non-free flag).
 - **Play Store publishing** → `rules/play-store-testers.md`

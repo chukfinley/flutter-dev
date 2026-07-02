@@ -17,6 +17,7 @@ or point the agent at this repo. Rules are written to be loaded as context.
 
 | Area | Rule | Why |
 |------|------|-----|
+| State | [Always use Riverpod](rules/state-riverpod.md) | One consistent, compile-safe, async-friendly state solution across every app |
 | Location | [Use `libre_location`, not `geolocator`](rules/location-libre-location.md) | `geolocator` pulls Google Play Services → IzzyOnDroid flags app as non-free |
 | Publishing | [Get Play Store testers via TestersCommunity](rules/play-store-testers.md) | Google now requires 12 testers × 14 days before you can publish |
 
