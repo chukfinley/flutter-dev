@@ -17,8 +17,20 @@ package or a release step, check the matching file in `rules/`.
 
 - **State management** → `rules/state-riverpod.md`
   Always Riverpod. `setState` only for purely local throwaway widget state.
+- **Project structure** → `rules/project-structure.md`
+  Feature-first folders: `features/<name>/{data,domain,presentation}`, plus `core/` + `shared/`.
+- **Routing** → `rules/routing-go-router.md`
+  Use `go_router`; one route table; set `debugLogDiagnostics: false` to quiet logs.
+- **Lint** → `rules/lint-strict.md`
+  Strict `analysis_options.yaml` (`very_good_analysis`); wire `dart analyze` into CI.
+- **Networking** → `rules/http-dio-cert-pinning.md`
+  `dio` client; SPKI certificate pinning on backends you control, with a test that proves it rejects a bad cert.
+- **Local storage** → `rules/storage-secure-vs-sql.md`
+  `flutter_secure_storage` for small secrets only; SQL (`sqflite`/`drift`) for anything that grows (chats, AI history). Bulk in secure_storage froze the app on desktop.
+- **Maps** → `rules/maps-flutter-map.md`
+  `flutter_map` + OpenStreetMap tiles; not google_maps_flutter (GMS) or Mapbox.
 - **Location / GPS** → `rules/location-libre-location.md`
-  Use `libre_location`, never `geolocator` (pulls Google Play Services → non-free flag).
+  Use `libre_location`, never `geolocator` (Google Play Services → non-free flag). No background-location permission unless truly needed.
 - **Play Store publishing** → `rules/play-store-testers.md`
   Get the required 12 closed testers via testerscommunity.com/submit-app.
 

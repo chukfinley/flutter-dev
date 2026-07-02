@@ -53,6 +53,38 @@ Permissions still required in `AndroidManifest.xml`:
 Handle the runtime permission request yourself (e.g. `permission_handler`, which is
 GMS-free) before calling `getLocation()`.
 
+## Do NOT request background location unless the app truly needs it
+
+Only request **foreground** location (`ACCESS_FINE_LOCATION` /
+`ACCESS_COARSE_LOCATION`). Do **not** add `ACCESS_BACKGROUND_LOCATION` unless the
+app genuinely tracks location while closed (e.g. a run/route tracker).
+
+Why it costs you:
+
+- **Google Play:** background location triggers a manual review where you must
+  submit a **video / written justification** explaining why the app needs it.
+  Slow, easy to fail, and can hold up or reject the whole release.
+- **F-Droid / IzzyOnDroid:** background location is treated as a
+  privacy/tracking concern and gets flagged as an anti-feature.
+
+So by default, keep it off:
+
+```xml
+<!-- present: foreground only -->
+<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+<!-- ABSENT on purpose — do NOT add unless the app tracks in the background:
+<uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" /> -->
+```
+
+If a transitive dependency drags `ACCESS_BACKGROUND_LOCATION` in, strip it:
+
+```xml
+<uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"
+    tools:node="remove" />
+```
+
 ## Notes / gotchas
 
 - No **fused** provider → positions come straight from GPS/network. Slightly slower
