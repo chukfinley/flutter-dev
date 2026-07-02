@@ -17,6 +17,8 @@ package or a release step, check the matching file in `rules/`.
 
 - **State management** → `rules/state-riverpod.md`
   Always Riverpod. `setState` only for purely local throwaway widget state.
+- **Data models** → `rules/models-freezed.md`
+  freezed + json_serializable for immutable models / copyWith / JSON.
 - **Project structure** → `rules/project-structure.md`
   Feature-first folders: `features/<name>/{data,domain,presentation}`, plus `core/` + `shared/`.
 - **Routing** → `rules/routing-go-router.md`
@@ -31,6 +33,14 @@ package or a release step, check the matching file in `rules/`.
   `flutter_map` + OpenStreetMap tiles; not google_maps_flutter (GMS) or Mapbox.
 - **Location / GPS** → `rules/location-libre-location.md`
   Use `libre_location`, never `geolocator` (Google Play Services → non-free flag). No background-location permission unless truly needed.
+- **Notifications & push** → `rules/notifications-push.md`
+  Local = flutter_local_notifications. Push = UnifiedPush wake-up poke (self-host ntfy / NextPush), then app fetches E2EE content from your relay. FCM only as Play-Store fallback. Never put plaintext in a push.
+- **Client telemetry** → `rules/no-client-telemetry.md`
+  No Firebase/Crashlytics/analytics SDK in the app. Log server-side (PostHog).
+- **Build & signing** → `rules/build-release-signing.md`
+  Always `--release`, never debug. Per-app keystore, generated + backed up on app creation, gitignored. Universal APK for F-Droid/direct, AAB for Play Store, split-per-abi for smaller self-distributed APKs.
+- **Localization** → `rules/i18n-gen-l10n.md`
+  gen-l10n ARB; EN + DE mandatory; ES/FR/IT/PT optional. No hard-coded strings.
 - **Play Store publishing** → `rules/play-store-testers.md`
   Get the required 12 closed testers via testerscommunity.com/submit-app.
 
