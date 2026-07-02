@@ -6,10 +6,16 @@
    [`flutter_local_notifications`](https://pub.dev/packages/flutter_local_notifications).
    No GMS, no server. Use for reminders, timers, or "app is running in the
    background" foreground-service notifications.
-2. **Push** (a server wakes a *closed* app) → for FOSS apps use **UnifiedPush**.
-   Self-host the push server (**ntfy**). Ship **one** build that carries an
-   **embedded FCM distributor** so the same UnifiedPush code path rides FCM for
-   Play-Store / Google-phone users. **iOS is separate — APNs, always.**
+2. **Push** (a server wakes a *closed* app). On Android there are **two** GMS-free
+   ways to get instant delivery — use both, in this order:
+   - **Baseline: "the Signal way"** — the app holds its **own persistent WebSocket**
+     via a `remoteMessaging` foreground service. Works on *any* phone, **needs no
+     distributor app**, always available. Cost: battery + a persistent notification.
+   - **Optional, battery-saving: UnifiedPush** — a shared distributor socket
+     (self-hosted **ntfy**). Lighter, but the user must have a distributor installed.
+   - **Play-Store / Google phones:** try **FCM first** (cheapest); fall back to the
+     websocket automatically when FCM is absent/failing. One build, embedded FCM
+     distributor behind a flavor. **iOS is separate — APNs, always.**
 
 ## The key insight (why "ntfy is just text" doesn't matter)
 
@@ -38,18 +44,77 @@ opaque to the push server.
 ## Why you can't just use your own WebSocket
 
 You already have a relay/WebSocket. Why involve a push service at all? Because
-**Android kills background connections**, and the OS keeps tightening the screws:
+**Android kills background connections** when the app is closed. Three ways to keep
+delivery working, GMS-free:
 
-- **Foreground service** — keep the socket alive with a permanent "App is running"
-  notification. Works (Signal, SimpleX, Briar do this), but drains battery, and on
-  **Android 15+** the `dataSync` / `mediaProcessing` FGS types are **capped at 6h
-  per 24h** (`onTimeout` fires and kills it). Play Store also scrutinizes permanent
-  FGS. Increasingly fragile as a *default*.
-- **WorkManager polling** — cheap but not instant (min ~15 min, not guaranteed);
-  Android 16 tightens job quotas further. This is a "slow mode" floor, not push.
+- **Own websocket + foreground service** ("the Signal way", see below) — the app
+  keeps *its own* socket alive. Instant, no distributor needed, works everywhere.
+  Higher battery + a persistent notification. **Use the `remoteMessaging` FGS type**
+  (Android 14+) — it's purpose-built for chat and, crucially, is **NOT** subject to
+  Android 15's 6h/24h cap (that cap only hits `dataSync`/`mediaProcessing`). So a
+  messaging socket is *not* fragile if you pick the right FGS type.
 - **UnifiedPush / FCM** — the phone keeps **one** shared, battery-efficient
-  connection (via the distributor) that can wake **any** app. One socket for the
-  whole phone instead of one per app. This is the right default.
+  connection (via a distributor / Play Services) that can wake **any** app. Lighter
+  than a per-app socket, but UnifiedPush needs a distributor installed and FCM needs
+  GMS.
+- **WorkManager polling** — cheap but not instant (min ~15 min, not guaranteed);
+  Android 16 tightens job quotas further. A "slow mode" *floor*, not real push.
+
+The robust design uses **all three tiers**: FCM/UnifiedPush when available (cheap),
+own websocket+FGS as the always-works fallback, WorkManager as the last-resort floor.
+
+## "The Signal way" — own websocket + FGS, no distributor (baseline)
+
+This is why Signal (installed from signal.org / GitHub, no Play Store) still gives
+**instant** notifications on a de-Googled phone: it doesn't depend on FCM *or* on a
+UnifiedPush distributor. It keeps **its own** persistent WebSocket alive in a
+foreground service. Self-contained.
+
+How Signal does it (verified against its manifest, 2026):
+
+- **Runtime auto-fallback, not a build split.** Signal always *tries* FCM first (even
+  with no Play Services); if FCM registration fails — or fails for 3 days straight —
+  it **automatically switches on the websocket**. There's also a manual toggle:
+  *Settings → Data and storage → "Stay connected in background."*
+- **What the user sees:** a low-importance persistent notification **"Background
+  connection enabled"** (the icon with two arrows). The user can silence it.
+- **No distributor, nothing else to install.** Contrast with UnifiedPush, which needs
+  a separate distributor app.
+
+Recipe for a new app copying this:
+
+- Foreground service with **`android:foregroundServiceType="remoteMessaging"`** +
+  permission **`FOREGROUND_SERVICE_REMOTE_MESSAGING`**. This is the type Signal and
+  Molly declare for the incoming-message socket. Introduced in Android 14 for exactly
+  this "transfer messages device-to-device" purpose.
+
+  ```xml
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_REMOTE_MESSAGING" />
+  <service
+      android:name=".push.MessageSocketService"
+      android:foregroundServiceType="remoteMessaging"
+      android:exported="false" />
+  ```
+
+- Hold the websocket + a **partial wakelock**; post a low-importance persistent
+  notification (let the user silence it).
+- **Try FCM / embedded distributor first; fall back to this websocket** when GMS/FCM
+  is absent or failing (Signal's auto-detect pattern).
+- Add a **`WorkManager` slow-poll** as the floor for when even the FGS gets killed.
+- Ensure the service **restarts from background** after Doze/reboot: `remoteMessaging`
+  is allowed to start from the background; re-arm via `BOOT_COMPLETED` + connectivity
+  callbacks.
+
+Why `remoteMessaging` specifically (not `dataSync` / `specialUse`):
+
+- **Not capped:** Android 15's 6h/24h FGS timeout hits `dataSync` and
+  `mediaProcessing` — **`remoteMessaging` is exempt**, so the chat socket can stay up.
+- **No Play justification:** `specialUse` requires a written justification reviewed in
+  Play Console (and may be rejected if a standard type fits). `remoteMessaging` is the
+  purpose-built standard type → no special review needed.
+
+This is the **baseline** for our apps: it works on every Android phone with zero
+external dependencies. Layer UnifiedPush and FCM on top only as battery optimizations.
 
 ## What UnifiedPush actually is (and the 2025 WebPush change)
 
@@ -169,10 +234,16 @@ path via a (self-hostable) notification relay that holds the APNs token and send
 **content-free** pushes (the SimpleX model). Keep the wake-then-fetch design so only
 the transport differs per platform.
 
-Production checklist: (1) auth-locked ntfy container, (2) WebPush/VAPID sender in
-your backend, (3) store each user's endpoint, (4) content-free poke → app fetch +
-decrypt + local notification, (5) embedded FCM distributor behind a flavor for the
-Play-Store build, (6) separate APNs path for iOS.
+Production checklist (tiered — ship the baseline first, add the rest as optimizations):
+1. **Baseline:** app-owned websocket + `remoteMessaging` foreground service +
+   WorkManager slow-poll floor. Works on every Android phone, no server push needed
+   beyond your existing relay.
+2. Auth-locked **ntfy** container + a **WebPush/VAPID sender** in your backend;
+   store each user's endpoint; content-free poke → app fetch + decrypt + local
+   notification. (Battery-saving path for phones with a distributor.)
+3. **Embedded FCM distributor** behind a build flavor for the Play-Store build;
+   try FCM first, fall back to the baseline websocket automatically.
+4. Separate **APNs** path for iOS (content-free pushes).
 
 ## Non-messenger apps
 
@@ -192,4 +263,9 @@ active") is enough (mind the Android 15 6h FGS cap for `dataSync`).
 - **iOS: APNs is unavoidable.** No UnifiedPush on iOS. Every FOSS messenger that has
   iOS push (SimpleX, Session, Element) routes through APNs with content-free pushes.
 - Keep the F-Droid flavor **free of all Google code** — FCM/embedded-FCM lives only
-  in the Play flavor.
+  in the Play flavor. The baseline websocket+FGS ships in *both* flavors.
+- **FGS type matters:** use `remoteMessaging` for a chat socket (exempt from Android
+  15's 6h cap, no Play justification). Don't use `dataSync` (capped) or `specialUse`
+  (needs review) for it.
+- Molly inherits Signal's `remoteMessaging` declaration; SimpleX also runs its own
+  FGS (exact type unverified). All confirm: **own-websocket + FGS needs no distributor.**

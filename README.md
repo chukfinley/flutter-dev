@@ -26,7 +26,7 @@ or point the agent at this repo. Rules are written to be loaded as context.
 | Storage | [secure_storage for secrets, SQL for data](rules/storage-secure-vs-sql.md) | Bulk data in secure_storage froze the app on desktop; SQL for anything that grows |
 | Maps | [`flutter_map` + OpenStreetMap](rules/maps-flutter-map.md) | No GMS, no Mapbox account/billing; free OSM tiles |
 | Location | [Use `libre_location`, not `geolocator`](rules/location-libre-location.md) | `geolocator` pulls Google Play Services → IzzyOnDroid flags app as non-free; no background permission |
-| Notifications | [Local vs push; UnifiedPush wake-then-fetch](rules/notifications-push.md) | Push is just a wake-up poke; E2EE content stays on your relay; self-host auth-locked ntfy |
+| Notifications | [Tiered push: Signal-way websocket → UnifiedPush → FCM](rules/notifications-push.md) | Baseline = own websocket + `remoteMessaging` FGS (no distributor, works everywhere); push is a wake-up poke; E2EE stays on your relay |
 | Live chip | [Android 16 status-bar Live Update (native Kotlin)](rules/live-status-bar-notification.md) | The "notification top-left"; OS-ticked countdown chip, no Flutter package can do it |
 | Telemetry | [No crash/analytics SDK in the app](rules/no-client-telemetry.md) | Firebase = GMS + tracking flag; log server-side (PostHog) where you control it |
 | Build | [Release APK, per-app keystore, back it up](rules/build-release-signing.md) | Never debug builds; lost keystore = can't update app ever; APK vs AAB vs split-per-abi |
