@@ -1,5 +1,23 @@
 # Notifications & push
 
+## TL;DR — what to actually build
+
+**Default for our apps: build ONLY the "Signal way" (own websocket +
+`remoteMessaging` foreground service).** It gives instant notifications on every
+Android phone — Google or de-Googled — needs no distributor app, and needs nothing
+hosted beyond the relay you already have. That's the whole requirement.
+
+Everything else below (UnifiedPush, FCM, WebPush, build flavors) is **optional
+battery optimization you can add later**. The tiers are **automatic fallbacks**, not
+a menu you pick from or wire by hand — you are NOT required to implement 2/3/4.
+
+- **iOS is unrelated** — it can't do background websockets, so *if and only if* you
+  ship an iPhone app, you add Apple's APNs. Building Android only? Ignore all iOS bits.
+- **Build "flavors" are an Android-only concept** (F-Droid build vs Play-Store build)
+  and are only needed once you add the FCM path. Signal-way alone needs no flavors.
+
+---
+
 **Rule:** Separate two different things:
 
 1. **Local notifications** (the app itself shows a notification) →
