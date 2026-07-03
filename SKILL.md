@@ -19,6 +19,20 @@ package or a release step, check the matching file in `rules/`.
   Always Riverpod. `setState` only for purely local throwaway widget state.
 - **Data models** → `rules/models-freezed.md`
   freezed + json_serializable for immutable models / copyWith / JSON.
+- **Theming** → `rules/theming-material3-expressive.md`
+  Material 3 on, aim for M3 Expressive; seed-driven light/dark, no hard-coded colors. (Detailed theming skill WIP.)
+- **Secrets & config** → `rules/secrets-dotenv.md`
+  `.env` via flutter_dotenv so `flutter run` just works; bundled ≠ secret — real keys stay backend-side.
+- **Monetization** → `rules/monetization-revenuecat.md`
+  RevenueCat; entitlement is server-side truth; `app_user_id == backend user id`. Paid = Play build (billing needs Play).
+- **App icons & splash** → `rules/app-icons-splash.md`
+  flutter_launcher_icons + flutter_native_splash from one source image.
+- **Testing** → `rules/testing-strategy.md`
+  Unit/widget/integration; always test security+money logic and every fixed bug; run in CI.
+- **CI** → `rules/ci-github-actions.md`
+  GitHub Actions: analyze+test on PR, build release APK on tag; keystore from secrets.
+- **Flutter version** → `rules/flutter-version-fvm.md`
+  Pin with fvm (commit `.fvmrc`), but bump often and keep CI in sync — moving pin.
 - **Project structure** → `rules/project-structure.md`
   Feature-first folders: `features/<name>/{data,domain,presentation}`, plus `core/` + `shared/`.
 - **Routing** → `rules/routing-go-router.md`
@@ -50,6 +64,11 @@ _(More rules get added as files under `rules/`. Always check there first.)_
 
 ## General principles
 
+- **Not FOSS-only.** Quality/architecture rules (state, structure, models,
+  networking, testing, signing, monetization) apply to **every** app. FOSS-specific
+  rules (`libre_location`, `flutter_map`, `no-client-telemetry`, GMS-free
+  notifications) apply **only** when the app is meant to be FOSS. A paid/closed
+  money-app may use FCM, Google Maps, Crashlytics — whatever converts best. Money first.
 - **FOSS builds:** before adding a dependency, ask *does it link Google Play
   Services or another proprietary blob?* If yes, find the LocationManager-level /
   platform-native / self-hosted alternative. A working app flagged `NonFreeDep`
