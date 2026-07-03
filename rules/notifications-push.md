@@ -1,6 +1,25 @@
 # Notifications & push
 
-## TL;DR — what to actually build
+## TL;DR — what we do
+
+Same pattern on every platform: **the push only says "wake up, pull your message."
+It never carries the message content.** Because the poke is contentless, the push
+transport is untrusted and irrelevant — it can never leak or read anything. The app
+wakes, fetches the real (encrypted) message from *our* relay, decrypts locally, and
+shows the notification.
+
+- **Android → our own WebSocket service** (the "Signal way": a `remoteMessaging`
+  foreground service holding our socket). No Google, no Apple, no distributor. Works
+  on every Android phone. This is all we build by default.
+- **iOS → Apple's official APNs** (only when we actually ship an iPhone app). Apple
+  forbids background sockets, so APNs is the *only* way to wake a closed app. Our
+  backend sends a contentless poke straight to Apple; the app then pulls + decrypts
+  from our relay, exactly like Android.
+
+Everything else below (UnifiedPush, FCM, WebPush, build flavors) is **optional
+battery optimization** — automatic fallbacks, not a menu, not required.
+
+---
 
 **Default for our apps: build ONLY the "Signal way" (own websocket +
 `remoteMessaging` foreground service).** It gives instant notifications on every
