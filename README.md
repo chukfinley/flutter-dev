@@ -6,12 +6,25 @@ Every time a "do it *this* way / use *this* thing, or you'll waste hours" lesson
 comes up, it gets one file in [`rules/`](rules/) so it's never forgotten again.
 Covers coding decisions, package choices, publishing, tooling — whatever bites.
 
-**Not FOSS-only.** We open-source apps where sensible, but some are closed
-money-makers — that's fine. The **quality/architecture** rules (state, structure,
-models, networking, testing, signing) apply to **every** app. The **FOSS-specific**
-rules (`libre_location`, `flutter_map`, `no-client-telemetry`, GMS-free
-notifications) apply only when the app is meant to be FOSS; a paid/closed app can use
-FCM, Google Maps, Crashlytics — whatever converts best. Money first.
+**Two app types — you'll be told which up front:**
+
+- **FOSS app** → maximize free & open-source: same repo, and we push every
+  FOSS-specific rule as hard as possible (no GMS, `libre_location`, `flutter_map`,
+  no client telemetry, GMS-free notifications).
+- **Monetization app** → money is the priority, but **we still default to FOSS /
+  open-source components** wherever they don't hurt the money goal. We only reach for
+  a proprietary dependency (FCM, Google Maps, Crashlytics, Play Billing) when it
+  genuinely converts better or is required — not by default.
+
+Either way, the **quality/architecture** rules (state, structure, models,
+networking, testing, signing, monetization) apply to **every** app. The
+**FOSS-specific** rules are mandatory for FOSS apps and the *preferred default* for
+money apps — deviate only for a real monetization reason.
+
+**Universal by default.** Whatever can be built cross-platform (one codebase for
+Android/iOS/desktop/web, platform-agnostic packages, a shared widget) → build it
+universal. Drop to platform-specific native code only when there's no cross-platform
+way. Prefer packages that support all target platforms.
 
 ## How to use
 

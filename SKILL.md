@@ -64,11 +64,20 @@ _(More rules get added as files under `rules/`. Always check there first.)_
 
 ## General principles
 
-- **Not FOSS-only.** Quality/architecture rules (state, structure, models,
-  networking, testing, signing, monetization) apply to **every** app. FOSS-specific
-  rules (`libre_location`, `flutter_map`, `no-client-telemetry`, GMS-free
-  notifications) apply **only** when the app is meant to be FOSS. A paid/closed
-  money-app may use FCM, Google Maps, Crashlytics — whatever converts best. Money first.
+- **Two app types (you'll be told which):** a **FOSS app** maximizes free &
+  open-source — every FOSS-specific rule pushed as hard as possible. A
+  **monetization app** puts money first but **still defaults to FOSS/open-source
+  components**; reach for a proprietary dep (FCM, Google Maps, Crashlytics, Play
+  Billing) **only** when it genuinely converts better or is required, not by default.
+  Quality/architecture rules (state, structure, models, networking, testing, signing,
+  monetization) apply to **every** app; FOSS-specific rules are mandatory for FOSS
+  apps and the preferred default for money apps.
+- **Universal by default.** Whatever can be built cross-platform (one Flutter
+  codebase for Android/iOS/desktop/web, platform-agnostic packages, a shared widget
+  instead of platform-specific ones) → build it universal. Drop to platform-specific
+  native code only when there's no cross-platform way (e.g. the `remoteMessaging`
+  foreground service, the Android 16 Live Update chip). Prefer packages that support
+  all target platforms over ones that lock you to one.
 - **FOSS builds:** before adding a dependency, ask *does it link Google Play
   Services or another proprietary blob?* If yes, find the LocationManager-level /
   platform-native / self-hosted alternative. A working app flagged `NonFreeDep`

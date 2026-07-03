@@ -46,14 +46,19 @@ final isPro = info.entitlements.active.containsKey('pro');
 - The **F-Droid / free build** (if any) ships without billing — free, or
   donation-only (e.g. a "support" link, Liberapay), no Play billing lib.
 
-## Not every app is FOSS
+## Two app types — but FOSS components stay the default
 
-This playbook is **not FOSS-only**. Some apps are pure money-makers and are **not
-open-sourced at all**. For those, the FOSS-specific rules (`libre_location`,
-`flutter_map`, `no-client-telemetry`, GMS-free notifications) are **optional** —
-use FCM, Google Maps, Crashlytics, whatever converts best. The
-architecture/quality rules (Riverpod, structure, freezed, dio, testing, signing)
-**still apply to every app**, open or closed.
+You'll be told up front which kind you're building:
+
+- **FOSS app** → maximize free & open-source; push every FOSS-specific rule hard.
+- **Monetization app** → money is the priority, but **still default to FOSS /
+  open-source components** wherever they don't hurt the money goal. Reach for a
+  proprietary dependency (FCM, Google Maps, Crashlytics, Play Billing) **only** when
+  it genuinely converts better or is required — not by default.
+
+The architecture/quality rules (Riverpod, structure, freezed, dio, testing, signing)
+**apply to every app**, open or closed. The FOSS-specific rules are mandatory for a
+FOSS app and the preferred default for a money app.
 
 ## Notes / gotchas
 
