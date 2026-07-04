@@ -55,3 +55,8 @@ FlutterMap(
   tiles use `vector_map_tiles` (needs a vector tile / style source).
 - Pair with `libre_location` for the "my location" dot — see
   `location-libre-location.md`.
+- **POI (nearby restaurants etc.) come from OSM via the Overpass API**, *not* from
+  flutter_map. Overpass returns a different shape than you expect (`elements[]` with
+  `lat`/`lon`/`tags`, some elements are ways/relations with no direct `lat`) — this
+  already burned hours once. **Write a contract test that hits Overpass and proves
+  the fields before parsing them** — see `testing-strategy.md`.

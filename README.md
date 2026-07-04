@@ -53,7 +53,7 @@ or point the agent at this repo. Rules are written to be loaded as context.
 | Secrets | [`.env`, never hardcoded](rules/secrets-dotenv.md) | `flutter run` just works via flutter_dotenv; bundled ≠ secret, real keys stay backend-side |
 | Monetization | [RevenueCat, server-truth](rules/monetization-revenuecat.md) | One SDK for all stores; `app_user_id == backend id`; entitlement checked server-side |
 | Icons | [Launcher icons + splash](rules/app-icons-splash.md) | One source image → all platforms via flutter_launcher_icons + native_splash |
-| Testing | [Unit / widget / integration, in CI](rules/testing-strategy.md) | Always test security/money logic + every fixed bug; red test blocks merge |
+| Testing | [Unit / widget / contract / integration, in CI](rules/testing-strategy.md) | Contract-test every external API's shape before building on it; always test security/money + every fixed bug; red test blocks merge |
 | CI | [GitHub Actions builds release APK](rules/ci-github-actions.md) | Analyze+test on PR, build+release on tag; keystore from secrets |
 | Flutter version | [Pin with fvm, keep updated](rules/flutter-version-fvm.md) | Reproducible builds; moving pin — bump often, sync with CI |
 | Build | [Release APK, per-app keystore, back it up](rules/build-release-signing.md) | Never debug builds; lost keystore = can't update app ever; APK vs AAB vs split-per-abi |
